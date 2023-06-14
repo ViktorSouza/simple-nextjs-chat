@@ -1,7 +1,7 @@
 import { getServerSession } from 'next-auth'
 import { z } from 'zod'
 import { prisma } from '../../../db/db'
-import { authOptions } from '../auth/[...nextauth]/route'
+import { authOptions } from '../../../lib/auth'
 
 export async function POST(req: Request) {
 	const session = await getServerSession(authOptions)
