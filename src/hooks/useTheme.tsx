@@ -3,8 +3,12 @@ import { useEffect, useState } from 'react'
 
 const useTheme = () => {
 	const [theme, setTheme] = useState<'light' | 'dark'>(() => {
-		const storedTheme = localStorage.getItem('theme') as 'light' | 'dark'
-		return storedTheme ? storedTheme : 'light' // Set a default theme if no theme is stored
+		if (typeof window !== 'undefined') {
+			// Perform localStorage action
+			const storedTheme = localStorage.getItem('theme') as 'light' | 'dark'
+			return storedTheme ? storedTheme : 'light' // Set a default theme if no theme is stored
+		}
+		return 'light'
 	})
 
 	useEffect(() => {
