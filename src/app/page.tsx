@@ -4,7 +4,6 @@ import { redirect } from 'next/dist/server/api-utils'
 import Image from 'next/image'
 import { useEffect, useRef, useState } from 'react'
 import { io } from 'socket.io-client'
-import { prisma } from '../db/db'
 import { Message } from '../components/Message'
 
 const socket = io('http://localhost:3001')
@@ -12,7 +11,6 @@ export default function Home() {
 	const session = useSession({
 		required: true,
 	})
-	console.log(session.data)
 
 	const [isSomeoneTyping, setIsSomeoneTyping] = useState(true)
 	const textRef = useRef<HTMLInputElement>(null)
