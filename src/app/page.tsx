@@ -38,7 +38,6 @@ export default function Home() {
 		})
 	}, [])
 	useEffect(() => {
-		console.log(messages)
 		messagesRef.current?.scrollTo({
 			behavior: 'smooth',
 			top: messagesRef.current.scrollHeight - 1,
