@@ -1,6 +1,6 @@
 import { z } from 'zod'
 import bcrypt from 'bcryptjs'
-import { prisma } from '../../../db/db'
+import { prisma } from '../../../../db/db'
 
 const requestSchema = z.object({
 	email: z.string().nonempty('Please provide an eamil').email('Invalid email'),

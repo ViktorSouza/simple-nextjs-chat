@@ -1,5 +1,5 @@
 import { getServerSession } from 'next-auth/next'
-import { authOptions } from '@/lib/auth'
+import { authOptions } from './auth'
 import { NextAuthOptions } from 'next-auth'
 
 export async function getCurrentUser() {

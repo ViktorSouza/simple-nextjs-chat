@@ -1,6 +1,17 @@
 'use client'
 import { useSession } from 'next-auth/react'
 import { useForm } from 'react-hook-form'
+import {
+	AlertDialog,
+	AlertDialogAction,
+	AlertDialogCancel,
+	AlertDialogContent,
+	AlertDialogDescription,
+	AlertDialogFooter,
+	AlertDialogHeader,
+	AlertDialogTitle,
+	AlertDialogTrigger,
+} from '@/components/ui/alert-dialog'
 
 export function AccountForm({
 	user,
@@ -69,6 +80,12 @@ export function AccountForm({
 			</div>
 			<button className='px-6 py-3 bg-zinc-900 dark:bg-zinc-200 dark:text-zinc-800 rounded-md text-zinc-100 w-full font-medium'>
 				Apply Changes
+			</button>
+
+			<button
+				className='px-6 py-3 bg-red-500 mt-5 dark:text-zinc-200 rounded-md text-zinc-100 w-full font-medium'
+				type='button'>
+				Delete Account
 			</button>
 		</form>
 	)

@@ -1,6 +1,6 @@
 'use client'
-import { Options } from '../../components/Options'
-import useTheme from '../../hooks/useTheme'
+import { Options } from '../../../components/Options'
+import useTheme from '../../../hooks/useTheme'
 export default function Settings() {
 	const [theme, setTheme] = useTheme()
 	const themeOptions: { name: string; onClick: () => void }[] = [

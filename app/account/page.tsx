@@ -1,8 +1,8 @@
 // 'use client'
 import { redirect } from 'next/navigation'
 // import { useSession } from 'next-auth/react'
-import { getCurrentUser } from '../../lib/session'
-import { AccountForm } from '../../components/AccountForm'
+import { getCurrentUser } from '../../../lib/session'
+import { AccountForm } from '../../../components/AccountForm'
 
 export default async function Account() {
 	const user = await getCurrentUser()
@@ -30,9 +30,6 @@ export default async function Account() {
 					username: user?.username ?? '',
 				}}
 			/>
-			<button className='px-6 py-3 bg-red-500 mt-5 dark:text-zinc-200 rounded-md text-zinc-100 w-full font-medium'>
-				Delete Account
-			</button>
 		</section>
 	)
 }
