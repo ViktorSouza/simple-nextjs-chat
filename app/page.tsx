@@ -4,7 +4,6 @@ import { redirect } from 'next/dist/server/api-utils'
 import Image from 'next/image'
 import Pusher from 'pusher-js'
 import { useEffect, useRef, useState } from 'react'
-import { io } from 'socket.io-client'
 import { Message } from '@/components/Message'
 
 const pusher = new Pusher('733ce18d8e5e8379a6ca', {
@@ -12,7 +11,6 @@ const pusher = new Pusher('733ce18d8e5e8379a6ca', {
 })
 
 const channel = pusher.subscribe('chat')
-const socket = io('http://localhost:3001')
 export default function Home() {
 	const session = useSession({
 		required: true,
@@ -34,6 +32,7 @@ export default function Home() {
 	useEffect(() => {
 		//PUSHER
 		channel.bind('text-new', (data: { message: IMessage }) => {
+			console.log(data)
 			setMessages((curr) => [...curr, data.message])
 		})
 	}, [])

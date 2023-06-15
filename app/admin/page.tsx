@@ -21,6 +21,7 @@ export default async function Admin() {
 								key={user.id}
 								className='bg-zinc-100'>
 								<h1>{user.username}</h1>
+								<h1>{user.email}</h1>
 							</div>
 						)
 					})}
