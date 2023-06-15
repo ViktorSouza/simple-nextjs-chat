@@ -3,6 +3,15 @@ import { z } from 'zod'
 import { prisma } from '../../../db/db'
 import { authOptions } from '../../../lib/auth'
 
+import Pusher from 'pusher'
+
+const pusher = new Pusher({
+	appId: '1619167',
+	key: process.env.PUSHER_KEY,
+	secret: process.env.PUSHER_SECRET,
+	cluster: 'sa1',
+	useTLS: true,
+})
 export async function POST(req: Request) {
 	const session = await getServerSession(authOptions)
 	if (!session?.user.id) {
@@ -33,6 +42,9 @@ export async function POST(req: Request) {
 				},
 			},
 		},
+	})
+	pusher.trigger('chat', 'text-new', {
+		message,
 	})
 	return new Response(JSON.stringify(message))
 }

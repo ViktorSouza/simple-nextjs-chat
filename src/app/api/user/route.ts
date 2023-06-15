@@ -25,6 +25,7 @@ export async function POST(req: Request) {
 
 export async function PATCH(req: Request) {
 	const body = requestSchema
+		//TODO add an user verification
 		//TODO put email as well
 		.extend({ id: z.string().nonempty('Invalid id') })
 		.omit({ password: true })

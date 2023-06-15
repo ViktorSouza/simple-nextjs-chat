@@ -1,4 +1,5 @@
 'use client'
+import { useSession } from 'next-auth/react'
 import { useForm } from 'react-hook-form'
 
 export function AccountForm({
@@ -22,6 +23,7 @@ export function AccountForm({
 			email: user?.email ?? '',
 		},
 	})
+	const session = useSession()
 	return (
 		<form
 			className='space-y-4'
@@ -32,6 +34,7 @@ export function AccountForm({
 					method: 'PATCH',
 					body: JSON.stringify({ ...data, id: user.id }),
 				})
+				session.update()
 				// .then((res) => res.json())
 				// .then((res) => {
 				// 	console.log(res)
