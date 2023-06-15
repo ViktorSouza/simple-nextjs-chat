@@ -32,10 +32,6 @@ export default function Home() {
 	const [messages, setMessages] = useState<IMessage[]>([])
 	const messagesRef = useRef<HTMLDivElement>(null)
 	useEffect(() => {
-		//SOCKET
-		// socket.on('text-new', (data) => {
-		// 	setMessages((curr) => [...curr, data])
-		// })
 		//PUSHER
 		channel.bind('text-new', (data: { message: IMessage }) => {
 			setMessages((curr) => [...curr, data.message])

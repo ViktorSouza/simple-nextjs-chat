@@ -2,17 +2,6 @@ import { prisma } from '../../db/db'
 
 export const revalidate = 1
 export default async function Admin() {
-	// const totalMessages = (await prisma.message.findMany()).reduce(
-	// 	(result: { [key: string]: {}[] }, message) => {
-	// 		const date = message.createdAt.toDateString()
-	// 		if (!result[date]) {
-	// 			result[date] = []
-	// 		}
-	// 		result[date].push(message)
-	// 		return result
-	// 	},
-	// 	{},
-	// )
 	const totalMessages = await prisma.message.count()
 	const totalUsers = await prisma.user.count()
 	const users = await prisma.user.findMany()
