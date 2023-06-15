@@ -43,7 +43,7 @@ export async function POST(req: Request) {
 			},
 		},
 	})
-	pusher.trigger('chat', 'text-new', {
+	await pusher.trigger('chat', 'text-new', {
 		message,
 	})
 	return new Response(JSON.stringify(message))
