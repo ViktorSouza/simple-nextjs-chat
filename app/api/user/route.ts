@@ -1,6 +1,10 @@
 import { z } from 'zod'
 import bcrypt from 'bcryptjs'
-import { prisma } from '../../../../db/db'
+import { prisma } from '@/db/db'
+import { NextApiRequest, NextApiResponse } from 'next'
+import { authOptions } from '@/lib/auth'
+import { getSession } from 'next-auth/react'
+import { getServerSession } from 'next-auth'
 
 const requestSchema = z.object({
 	email: z.string().nonempty('Please provide an eamil').email('Invalid email'),
@@ -42,4 +46,23 @@ export async function PATCH(req: Request) {
 	console.log(user)
 
 	return new Response(JSON.stringify(user), { status: 200 })
+}
+
+export async function DELETE(req: Request, res: Response) {
+	const session = await getServerSession(authOptions)
+	if (!session) {
+		return new Response(JSON.stringify({ message: 'You must be logged in' }))
+	}
+	const deletedUser = await prisma.user.delete({
+		where: {
+			id: session.user.id,
+		},
+	})
+
+	return new Response(
+		JSON.stringify({
+			message: 'OK',
+		}),
+		{ status: 200 },
+	)
 }

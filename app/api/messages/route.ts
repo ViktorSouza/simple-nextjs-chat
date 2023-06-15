@@ -1,7 +1,7 @@
 import { getServerSession } from 'next-auth'
 import { z } from 'zod'
-import { prisma } from '../../../../db/db'
-import { authOptions } from '../../../../lib/auth'
+import { prisma } from '@/db/db'
+import { authOptions } from '@/lib/auth'
 
 import Pusher from 'pusher'
 

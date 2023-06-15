@@ -1,5 +1,5 @@
 'use client'
-import { useSession } from 'next-auth/react'
+import { signOut, useSession } from 'next-auth/react'
 import { useForm } from 'react-hook-form'
 import {
 	AlertDialog,
@@ -82,11 +82,35 @@ export function AccountForm({
 				Apply Changes
 			</button>
 
-			<button
-				className='px-6 py-3 bg-red-500 mt-5 dark:text-zinc-200 rounded-md text-zinc-100 w-full font-medium'
-				type='button'>
-				Delete Account
-			</button>
+			<AlertDialog>
+				<AlertDialogTrigger className='px-6 py-3 bg-red-500 mt-5 dark:text-zinc-200 rounded-md text-zinc-100 w-full font-medium'>
+					Delete Account
+				</AlertDialogTrigger>
+				<AlertDialogContent>
+					<AlertDialogHeader>
+						<AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+						<AlertDialogDescription>
+							This action cannot be undone. This will permanently delete your
+							account and remove your data from our servers.
+						</AlertDialogDescription>
+					</AlertDialogHeader>
+					<AlertDialogFooter>
+						<AlertDialogCancel>Cancel</AlertDialogCancel>
+						<AlertDialogAction
+							onClick={() => {
+								fetch('/api/user', { method: 'DELETE' })
+									.then((res) => res.json())
+									.then((res) => {
+										console.log(res)
+
+										signOut({ redirect: true, callbackUrl: '/' })
+									})
+							}}>
+							Continue
+						</AlertDialogAction>
+					</AlertDialogFooter>
+				</AlertDialogContent>
+			</AlertDialog>
 		</form>
 	)
 }

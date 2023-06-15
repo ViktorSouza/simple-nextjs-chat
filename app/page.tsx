@@ -5,7 +5,7 @@ import Image from 'next/image'
 import Pusher from 'pusher-js'
 import { useEffect, useRef, useState } from 'react'
 import { io } from 'socket.io-client'
-import { Message } from '../../components/Message'
+import { Message } from '@/components/Message'
 
 const pusher = new Pusher('733ce18d8e5e8379a6ca', {
 	cluster: 'sa1',

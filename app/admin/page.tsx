@@ -1,4 +1,4 @@
-import { prisma } from '../../../db/db'
+import { prisma } from '@/db/db'
 
 export const revalidate = 1
 export default async function Admin() {

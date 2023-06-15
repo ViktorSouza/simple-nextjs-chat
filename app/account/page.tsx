@@ -1,8 +1,8 @@
 // 'use client'
 import { redirect } from 'next/navigation'
 // import { useSession } from 'next-auth/react'
-import { getCurrentUser } from '../../../lib/session'
-import { AccountForm } from '../../../components/AccountForm'
+import { getCurrentUser } from '@/lib/session'
+import { AccountForm } from '@/components/AccountForm'
 
 export default async function Account() {
 	const user = await getCurrentUser()
