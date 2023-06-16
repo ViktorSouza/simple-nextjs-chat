@@ -5,6 +5,8 @@ import Image from 'next/image'
 import Pusher from 'pusher-js'
 import { useEffect, useRef, useState } from 'react'
 import { Message } from '@/components/Message'
+import { User } from '@prisma/client'
+import { Session } from 'next-auth'
 
 const pusher = new Pusher('733ce18d8e5e8379a6ca', {
 	cluster: 'sa1',
@@ -15,8 +17,10 @@ export default function Home() {
 	const session = useSession({
 		required: true,
 	})
+	const [isCurrentUserTyping, setIsCurrentUserTyping] = useState(false)
+	console.log(session)
+	const [peopleTyping, setPeopleTyping] = useState<Session['user'][]>([])
 
-	const [isSomeoneTyping, setIsSomeoneTyping] = useState(true)
 	const textRef = useRef<HTMLInputElement>(null)
 	type IMessage = {
 		message: string
@@ -35,13 +39,25 @@ export default function Home() {
 			console.log(data)
 			setMessages((curr) => [...curr, data.message])
 		})
+		channel.bind('start-typing', (data: Session['user']) => {
+			console.log(data.username + ' started to type :D')
+
+			//If the user already exists in peopleTypin
+			if (peopleTyping.findIndex((value) => value.id === data.id) !== -1) return
+
+			setPeopleTyping((prev) => [...prev, data])
+		})
+		channel.bind('stop-typing', (data: Session['user']) => {
+			console.log(data.username + ' stopped typing :(')
+			setPeopleTyping((prev) => prev.filter((value) => value.id !== data.id))
+		})
 	}, [])
 	useEffect(() => {
 		messagesRef.current?.scrollTo({
 			behavior: 'smooth',
 			top: messagesRef.current.scrollHeight - 1,
 		})
-	}, [messages])
+	}, [messages, peopleTyping])
 	useEffect(() => {
 		if (session.status === 'authenticated') {
 			fetch('/api/messages')
@@ -66,9 +82,9 @@ export default function Home() {
 							session={session}
 						/>
 					))}
-					{isSomeoneTyping && (
+					{!!peopleTyping.length && (
 						<div className='text-zinc-500 font-medium self-center flex'>
-							Someone is typing{' '}
+							{showWhoIsTyping(peopleTyping)}
 							<div className='flex -space-x-2'>
 								<i className='bi bi-dot  animate-[bounce_1s_0s_ease-in-out_infinite]'></i>
 								<i className='bi bi-dot  animate-[bounce_1s_150ms_ease-in-out_infinite]'></i>
@@ -82,6 +98,22 @@ export default function Home() {
 				<div className='rounded-full bg-zinc-100 dark:bg-zinc-900 w-full'>
 					<input
 						type='text'
+						onChange={(e) => {
+							if (e.currentTarget.value && !isCurrentUserTyping) {
+								fetch('/api/messages/typing-action', {
+									method: 'POST',
+									body: JSON.stringify({ action: 'start' }),
+								})
+								setIsCurrentUserTyping(true)
+							}
+							if (!e.currentTarget.value) {
+								fetch('/api/messages/typing-action', {
+									method: 'POST',
+									body: JSON.stringify({ action: 'stop' }),
+								})
+								setIsCurrentUserTyping(false)
+							}
+						}}
 						ref={textRef}
 						placeholder='Type a text...'
 						className='bg-transparent px-4 py-2  w-full outline-0'
@@ -103,4 +135,19 @@ export default function Home() {
 			</section>
 		</>
 	)
+}
+
+function showWhoIsTyping(peopleTyping: Session['user'][]) {
+	if (peopleTyping.length === 1) {
+		return `${peopleTyping[0].username} is typing`
+	} else {
+		return `${
+			peopleTyping
+				.map((person, index) => person.username)
+				.slice(0, -1)
+				.join(', ') +
+			' and ' +
+			peopleTyping.at(-1)?.username
+		} are typing`
+	}
 }
