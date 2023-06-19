@@ -2,18 +2,26 @@
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
 generator client {
-  provider        = "prisma-client-js"
-  previewFeatures = ["referentialActions"]
+  provider = "prisma-client-js"
 }
 
 model User {
-  username  String
-  email     String    @unique
-  password  String
-  createdAt DateTime  @default(now())
-  id        String    @id @default(auto()) @map("_id") @db.ObjectId
-  messages  Message[]
+  username           String
+  email              String    @unique
+  password           String
+  isTyping           Boolean   @default(false)
+  lastTypingActivity DateTime  @default(now())
+  createdAt          DateTime  @default(now())
+  id                 String    @id @default(auto()) @map("_id") @db.ObjectId
+  messages           Message[]
 }
+
+// model UserTypingStatus {
+//   id            String   @id @default(auto()) @map("_id") @db.ObjectId
+//   usersTypingId String[] @db.ObjectId
+//   usersTyping   User[]   @relation("UserTypingStatus", fields: [usersTypingId], references: [id])
+//   User          User[]
+// }
 
 model Message {
   message   String

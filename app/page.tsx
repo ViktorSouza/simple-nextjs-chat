@@ -3,10 +3,12 @@ import { useSession } from 'next-auth/react'
 import { redirect } from 'next/dist/server/api-utils'
 import Image from 'next/image'
 import Pusher from 'pusher-js'
-import { useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Message } from '@/components/Message'
 import { User } from '@prisma/client'
 import { Session } from 'next-auth'
+import { revalidate } from './admin/page'
+import { bounce, throttle } from '../lib/utils'
 
 const pusher = new Pusher('733ce18d8e5e8379a6ca', {
 	cluster: 'sa1',
@@ -17,9 +19,18 @@ export default function Home() {
 	const session = useSession({
 		required: true,
 	})
-	const [isCurrentUserTyping, setIsCurrentUserTyping] = useState(false)
-	console.log(session)
+	const [lastTypingActivity, setLastTypingActivity] = useState<Date>(
+		new Date(0),
+	)
 	const [peopleTyping, setPeopleTyping] = useState<Session['user'][]>([])
+	const typingDebounce = useMemo(() => bounce(() => getTypers(), 10000), [])
+	function getTypers() {
+		fetch('/api/messages/typing')
+			.then((res) => res.json())
+			.then((res) => {
+				setPeopleTyping(res.peopleTyping)
+			})
+	}
 
 	const textRef = useRef<HTMLInputElement>(null)
 	type IMessage = {
@@ -27,37 +38,43 @@ export default function Home() {
 		id: string
 		User: {
 			username: string
+			id: string
 		}
 		createdAt: string
 	}
 
 	const [messages, setMessages] = useState<IMessage[]>([])
+
 	const messagesRef = useRef<HTMLDivElement>(null)
 	useEffect(() => {
-		//PUSHER
 		channel.bind('text-new', (data: { message: IMessage }) => {
-			console.log(data)
 			setMessages((curr) => [...curr, data.message])
+			setPeopleTyping((prev) =>
+				prev.filter((value) => value.id !== data.message.User.id),
+			)
 		})
-		channel.bind('start-typing', (data: Session['user']) => {
-			console.log(data.username + ' started to type :D')
+		channel.bind('start-typing', async (data: Session['user']) => {
+			const usersTyping = await (await fetch('/api/messages/typing')).json()
+			setPeopleTyping(usersTyping.peopleTyping)
+			typingDebounce()
+		})
 
-			//If the user already exists in peopleTypin
-			if (peopleTyping.findIndex((value) => value.id === data.id) !== -1) return
-
-			setPeopleTyping((prev) => [...prev, data])
+		channel.bind('stop-typing', async (data: Session['user']) => {
+			const usersTyping = await (await fetch('/api/messages/typing')).json()
+			setPeopleTyping(usersTyping.peopleTyping)
+			typingDebounce()
 		})
-		channel.bind('stop-typing', (data: Session['user']) => {
-			console.log(data.username + ' stopped typing :(')
-			setPeopleTyping((prev) => prev.filter((value) => value.id !== data.id))
-		})
+		typingDebounce()
+		getTypers()
 	}, [])
+
 	useEffect(() => {
 		messagesRef.current?.scrollTo({
 			behavior: 'smooth',
 			top: messagesRef.current.scrollHeight - 1,
 		})
 	}, [messages, peopleTyping])
+
 	useEffect(() => {
 		if (session.status === 'authenticated') {
 			fetch('/api/messages')
@@ -68,6 +85,29 @@ export default function Home() {
 				.catch(console.log)
 		}
 	}, [session])
+
+	const throttleMessageSending = throttle(
+		(e: React.ChangeEvent<HTMLInputElement>) => {
+			typingDebounce()
+			if (
+				e.currentTarget.value &&
+				lastTypingActivity < new Date(Date.now() - 1000) //If the last typing activity is longer than 1 second
+			) {
+				fetch('/api/messages/typing', {
+					method: 'POST',
+					body: JSON.stringify({ action: 'start' }),
+				})
+				setLastTypingActivity(new Date(Date.now()))
+			}
+			if (!e.currentTarget.value) {
+				fetch('/api/messages/typing', {
+					method: 'POST',
+					body: JSON.stringify({ action: 'stop' }),
+				})
+			}
+		},
+		500,
+	)
 
 	return (
 		<>
@@ -98,22 +138,7 @@ export default function Home() {
 				<div className='rounded-full bg-zinc-100 dark:bg-zinc-900 w-full'>
 					<input
 						type='text'
-						onChange={(e) => {
-							if (e.currentTarget.value && !isCurrentUserTyping) {
-								fetch('/api/messages/typing-action', {
-									method: 'POST',
-									body: JSON.stringify({ action: 'start' }),
-								})
-								setIsCurrentUserTyping(true)
-							}
-							if (!e.currentTarget.value) {
-								fetch('/api/messages/typing-action', {
-									method: 'POST',
-									body: JSON.stringify({ action: 'stop' }),
-								})
-								setIsCurrentUserTyping(false)
-							}
-						}}
+						onChange={throttleMessageSending}
 						ref={textRef}
 						placeholder='Type a text...'
 						className='bg-transparent px-4 py-2  w-full outline-0'
