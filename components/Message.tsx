@@ -4,7 +4,7 @@ import { Session } from 'next-auth'
 import { SessionContextValue } from 'next-auth/react'
 import useTheme from '../hooks/useTheme'
 
-export function Message({
+export function MessageBox({
 	message,
 	session,
 }: {

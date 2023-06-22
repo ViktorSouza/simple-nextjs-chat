@@ -28,12 +28,30 @@ export async function POST(req: Request) {
 }
 
 export async function PATCH(req: Request) {
+	const session = await getServerSession(authOptions)
+
 	const body = requestSchema
-		//TODO add an user verification
 		//TODO put email as well
 		.extend({ id: z.string().nonempty('Invalid id') })
 		.omit({ password: true })
 		.parse(await req.json())
+
+	if (session?.user.id !== body.id)
+		return new Response(
+			JSON.stringify({ message: 'You are not authorized to make this' }),
+			{ status: 401 },
+		)
+
+	const candidateUser = await prisma.user.findUnique({
+		where: {
+			id: body.id,
+		},
+	})
+
+	if (!candidateUser)
+		return new Response(JSON.stringify({ message: 'User not found' }), {
+			status: 404,
+		})
 	const user = await prisma.user.update({
 		data: {
 			email: body.email,
@@ -43,7 +61,6 @@ export async function PATCH(req: Request) {
 			id: body.id,
 		},
 	})
-	console.log(user)
 
 	return new Response(JSON.stringify(user), { status: 200 })
 }

@@ -39,6 +39,7 @@ automatically optimize and load Inter, a custom Google Font.
 - [x] ~Dark mode~
 - [x] ~Responsiveness~
 - [x] ~Real time chat~
+- [x] ~"Someone is typing" feature~
 - [x] Infinite scroll
 - [x] Admin Page
 - [x] Account Page
