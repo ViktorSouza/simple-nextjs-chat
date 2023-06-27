@@ -1,20 +1,9 @@
 'use client'
 import { useSession } from 'next-auth/react'
-import { redirect } from 'next/dist/server/api-utils'
-import Image from 'next/image'
 import Pusher from 'pusher-js'
-import React, {
-	Ref,
-	useCallback,
-	useEffect,
-	useMemo,
-	useRef,
-	useState,
-} from 'react'
+import React, { useEffect, useMemo, useRef, useState } from 'react'
 import { MessageBox } from '@/components/Message'
-import { Message, User } from '@prisma/client'
 import { Session } from 'next-auth'
-import { revalidate } from './admin/page'
 import { bounce, throttle } from '../lib/utils'
 import { MessageInput } from '../components/MessageInput'
 import { SomeoneIsTyping } from '../components/SomeoneIsTyping'
