@@ -9,15 +9,27 @@ export function MessageInput({
 	textRef: RefObject<HTMLDivElement>
 }) {
 	const [messageInput, setMessageInput] = useState<string>('')
-	console.log(messageInput)
+	const sendMessage = () => {
+		const message = textRef?.current?.innerText ?? ''
+		if (message === '') return null
+		textRef.current!.innerText = ''
+
+		fetch('/api/messages', {
+			method: 'POST',
+			body: JSON.stringify({ message }),
+		}).catch(console.log)
+	}
+
 	return (
 		<section className='w-full  bg-white dark:bg-zinc-950 p-2'>
-			<div className=' rounded-md w-full focus-within:ring-4 focus-within:outline-none ring-sky-500 bg-zinc-200 dark:bg-zinc-900 flex items-end justify-between gap-1 py-2 px-3'>
+			<div className=' rounded-md w-full focus-within:ring-4 focus-within:outline-none ring-sky-500 bg-zinc-200 focus-within:bg-transparent dark:bg-zinc-900 flex items-end justify-between gap-1 py-2 px-3'>
 				<div
 					onInput={(e) => {
 						setMessageInput(e.currentTarget.innerText)
-						console.log(e)
 						throttleMessageSending(e)
+					}}
+					onKeyDown={(e) => {
+						if (e.key === 'Enter' && e.ctrlKey) sendMessage()
 					}}
 					aria-multiline
 					contentEditable={true}
@@ -30,16 +42,8 @@ export function MessageInput({
 				<button
 					className='hover:scale-105 transition-color text-sky-500 duration-500 text-lg disabled:text-zinc-500 shrink-0'
 					disabled={!messageInput}
-					onClick={() => {
-						const message = textRef?.current?.innerText ?? ''
-						if (message === '') return null
-						textRef.current!.innerText = ''
-
-						fetch('/api/messages', {
-							method: 'POST',
-							body: JSON.stringify({ message }),
-						}).catch(console.log)
-					}}>
+					title='Send'
+					onClick={sendMessage}>
 					<i className='bi bi-send-fill'></i>
 				</button>
 			</div>

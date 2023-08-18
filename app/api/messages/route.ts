@@ -4,6 +4,8 @@ import { prisma } from '@/db/db'
 import { authOptions } from '@/lib/auth'
 
 import Pusher from 'pusher'
+import { NextApiRequest } from 'next'
+import { NextRequest } from 'next/server'
 
 const pusher = new Pusher({
 	appId: '1619167',
@@ -49,7 +51,10 @@ export async function POST(req: Request) {
 	return new Response(JSON.stringify(message))
 }
 
-export async function GET() {
+export async function GET(req: NextRequest) {
+	const { searchParams } = new URL(req.url)
+	const page = Number(searchParams.get('page')) || 0
+	console.log(page, searchParams.get('page'))
 	const messages = await prisma.message.findMany({
 		include: {
 			User: {
@@ -59,6 +64,11 @@ export async function GET() {
 				},
 			},
 		},
+		skip: page * 30,
+		take: -30,
+		// orderBy: {
+		// 	createdAt: 'desc',
+		// },
 	})
 	return new Response(JSON.stringify({ messages }))
 }

@@ -2,10 +2,13 @@
 
 import { Session } from 'next-auth'
 import { SessionContextValue } from 'next-auth/react'
+import { useEffect, useRef } from 'react'
 import useTheme from '../hooks/useTheme'
 
 export function MessageBox({
 	message,
+	isLast,
+	newLimit,
 	session,
 }: {
 	message: {
@@ -14,13 +17,32 @@ export function MessageBox({
 		User: { username: string }
 		createdAt: string
 	}
+	isLast: boolean
+	newLimit: () => any
 	session: SessionContextValue
 }) {
+	const messageRef = useRef<HTMLDivElement>(null)
 	const isUsernameMatching =
 		message.User.username === session.data?.user.username
-	// const [theme, setTheme] = useTheme()
+	useEffect(() => {
+		if (!messageRef?.current) return
+
+		const observer = new IntersectionObserver(
+			([entry]) => {
+				if (isLast && entry.isIntersecting) {
+					newLimit()
+					observer.unobserve(entry.target)
+				}
+			},
+			{ threshold: 0.95 },
+		)
+
+		observer.observe(messageRef.current)
+	}, [isLast])
+
 	return (
 		<div
+			ref={messageRef}
 			className={`w-3/4 lg:w-5/12 p-2 rounded-md bg-gray-200  dark:bg-zinc-900 mb-5 ${
 				isUsernameMatching
 					? 'self-end rounded-t-none !rounded-l-md text-zinc-100 !bg-zinc-900 dark:!bg-zinc-200 dark:text-zinc-800'
@@ -48,7 +70,9 @@ export function MessageBox({
 					})}
 				</span>
 			</div>
-			<p className='leading-5 break-words text-sm'>{message.message}</p>
+			<p className='leading-5 break-words text-sm whitespace-pre-wrap'>
+				{message.message}
+			</p>
 		</div>
 	)
 }

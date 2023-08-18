@@ -21,6 +21,7 @@ export default function Home() {
 		new Date(0),
 	)
 	const [peopleTyping, setPeopleTyping] = useState<Session['user'][]>([])
+	const [page, setPage] = useState(0)
 	const typingDebounce = useMemo(() => bounce(() => getTypers(), 10000), [])
 	function getTypers() {
 		fetch('/api/messages/typing')
@@ -67,23 +68,32 @@ export default function Home() {
 		getTypers()
 	}, [])
 
-	useEffect(() => {
-		messagesRef.current?.scrollTo({
-			behavior: 'smooth',
-			top: messagesRef.current.scrollHeight - 1,
-		})
-	}, [messages, peopleTyping])
+	useEffect(
+		() => {
+			// if (messagesRef.current!.scrollTop < 100)
+			if (messagesRef.current!.scrollTop < 400) return
+			messagesRef.current?.scrollTo({
+				behavior: 'smooth',
+				top: messagesRef.current.scrollHeight,
+			})
+		},
+		[
+			/* messages, peopleTyping */
+		],
+	)
 
 	useEffect(() => {
-		if (session.status === 'authenticated') {
-			fetch('/api/messages')
+		if (session.status === 'authenticated' && !messages.length) {
+			fetch(`/api/messages?page=${page}`)
 				.then((e) => e.json())
 				.then((data) => {
-					setMessages(data.messages)
+					setMessages((curr) => {
+						return [...data.messages, ...curr]
+					})
 				})
-				.catch(console.log)
+				.catch(console.error)
 		}
-	}, [session])
+	}, [session, page])
 
 	const throttleMessageSending = throttle(
 		(e: React.FormEvent<HTMLDivElement>) => {
@@ -111,20 +121,20 @@ export default function Home() {
 	return (
 		<>
 			<section
-				className='w-full overflow-auto flex-grow  bg-white dark:bg-zinc-950 px-4 py-2'
+				className='w-full overflow-auto flex-grow  bg-white dark:bg-zinc-950 px-4 py-2 flex flex-col-reverse shrink-[3] full'
 				ref={messagesRef}>
-				<div className=' flex flex-col shrink-[3] full'>
-					{messages.map((message) => (
-						<MessageBox
-							key={message.id}
-							message={message}
-							session={session}
-						/>
-					))}
-					{!!peopleTyping.length && (
-						<SomeoneIsTyping peopleTyping={peopleTyping} />
-					)}
-				</div>
+				{[...messages].reverse().map((message, index) => (
+					<MessageBox
+						isLast={index === messages.length - 1}
+						newLimit={() => setPage((curr) => curr + 1)}
+						key={message.id}
+						message={message}
+						session={session}
+					/>
+				))}
+				{!!peopleTyping.length && (
+					<SomeoneIsTyping peopleTyping={peopleTyping} />
+				)}
 			</section>
 			<MessageInput
 				textRef={textRef}
